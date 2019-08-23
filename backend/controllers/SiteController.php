@@ -22,7 +22,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['login', 'error'],
+                        'actions' => ['login', 'error', 'getCode','wxlogin'],
                         'allow' => true,
                     ],
                     [
@@ -100,7 +100,7 @@ class SiteController extends Controller
 
     public function actionGetCode()
     {
-//        var_dump(Yii::$app->request->get());
+        var_dump(Yii::$app->request->get());exit;
         if($_GET['state']=='sip_Wxlogin'){
             $control = 'r=site/wxlogin?code=';
             if(isset($_GET['code'])){
