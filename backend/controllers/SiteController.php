@@ -128,13 +128,13 @@ class SiteController extends Controller
         $url = 'https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token='.$token['access_token'].'&code='.$code.'&state=sip_Wxlogin';
         $usersinfo = $this->https_request($url); //以token和code获取企业微信用户userid
 
-        var_dump($usersinfo);Yii::$app->end();
         if(isset($usersinfo['UserId'])) {
             $url = 'https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=' . $token['access_token'] . '&userid=' . $usersinfo['UserId'];
-            $userinfo = https_request($url); //以token和企业微信用户userid获取该user基本信息
+            $userinfo = $this->https_request($url); //以token和企业微信用户userid获取该user基本信息
+            var_dump($userinfo);exit;
             if ($userinfo['errcode'] == 0) {
-                $this->db = new Sysdb;
-                $res = $this->db->query('select * from users where openid="' . $userinfo['userid'] . '"');
+//                $this->db = new Sysdb;
+//                $res = $this->db->query('select * from users where openid="' . $userinfo['userid'] . '"');
                 if ($res) {   //如果该用户存在本地用户表
                     //直接登录
                 } else {  //如果该用户不存在本地用户表
