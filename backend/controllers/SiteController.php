@@ -104,7 +104,7 @@ class SiteController extends Controller
             $control = 'r=site/wxlogin?code=';
             if(isset($_GET['code'])){
                 // 跳转到上一个页面将最后一个符号/开始的字符换成$control 如：// www.123.com/login   回调网页再跳转到：// www.123.com/wxlogin?code='.$_GET['code'];
-                header("Location: http://wxlogin.test?/".$control.$_GET['code']);
+                header("Location: http://wxlogin.test?".$control.$_GET['code']);
                 die;
             }
         }
