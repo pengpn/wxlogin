@@ -22,7 +22,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['login', 'error', 'get-code','wxlogin'],
+                        'actions' => ['login', 'error', 'get-code','wxlogin','test'],
                         'allow' => true,
                     ],
                     [
@@ -101,7 +101,7 @@ class SiteController extends Controller
     public function actionGetCode()
     {
         if($_GET['state']=='sip_Wxlogin'){
-            $control = 'r=site/wxlogin?code=';
+            $control = 'r=site/wxlogin&code=';
             if(isset($_GET['code'])){
                 // 跳转到上一个页面将最后一个符号/开始的字符换成$control 如：// www.123.com/login   回调网页再跳转到：// www.123.com/wxlogin?code='.$_GET['code'];
                 header("Location: http://wxlogin.test?".$control.$_GET['code']);
@@ -110,8 +110,50 @@ class SiteController extends Controller
         }
     }
 
+    public function actionTest()
+    {
+        return $this->render('index');
+        var_dump(123);
+        var_dump(Yii::$app->request->get());exit;
+    }
+
     public function actionWxlogin()
     {
-        var_dump(Yii::$app->request->get());exit;
+
+        $code = Yii::$app->request->get('code');
+        $corpid = 'ww484cd3aedaec5475';  //  这里   <------
+        $secret = 'MF6FmNsbV9ewSYYfyEa_UpmJ0N8xqeNQC4JpdaR6LPI'; //  这里   <------
+        $url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid='.$corpid.'&corpsecret='.$secret;
+        $token = $this->https_request($url); //以appid和secret获取token   <-----
+        $url = 'https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token='.$token['access_token'].'&code='.$code.'&state=sip_Wxlogin';
+        $usersinfo = $this->https_request($url); //以token和code获取企业微信用户userid
+
+        var_dump($usersinfo);Yii::$app->end();
+        if(isset($usersinfo['UserId'])) {
+            $url = 'https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=' . $token['access_token'] . '&userid=' . $usersinfo['UserId'];
+            $userinfo = https_request($url); //以token和企业微信用户userid获取该user基本信息
+            if ($userinfo['errcode'] == 0) {
+                $this->db = new Sysdb;
+                $res = $this->db->query('select * from users where openid="' . $userinfo['userid'] . '"');
+                if ($res) {   //如果该用户存在本地用户表
+                    //直接登录
+                } else {  //如果该用户不存在本地用户表
+                    //跳转到注册页面
+                }
+            }
+        }
+    }
+
+
+    private function https_request($url){
+        $curl=curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $data=json_decode(curl_exec($curl), true);
+        // $data=curl_exec($curl);
+        curl_close($curl);
+        return $data;
     }
 }
